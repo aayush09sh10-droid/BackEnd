@@ -3,7 +3,6 @@ import cors from "cors";
 import morgan from "morgan";
 
 import cookieParser from "cookie-parser";
-
 const app = express();
 app.use(cors({
     orgin:process.env.CORS_ORIGIN,
@@ -26,4 +25,12 @@ app.use(morgan("dev"));
 app.get("/",(req,res)=>{
     res.send("Backend is running ")
 })
+
+//Routes Import 
+
+import userRouter from "./routes/user.routes.js"
+
+//Routes Declaration
+
+app.use("/api/v1/users",userRouter)
 export default app;
