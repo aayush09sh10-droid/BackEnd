@@ -1,10 +1,10 @@
-import mosngoose,{Schema} from "mongoose";
-import { JsonWebTokenError } from "jsonwebtoken";
+import mongoose, { Schema } from "mongoose";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 const userSchema = new Schema({
     userName:{
         type:String,
-        requried:true,
+        required:true,
         unique:true,
         lowercase:true,
         trim:true,
@@ -12,26 +12,19 @@ const userSchema = new Schema({
     },
     email:{
         type:String,
-        requried:true,
+        required:true,
         unique:true,
         lowercase:true,
         trim:true,
     },
     fullname:{
         type:String,
-        requried:true,
-        unique:true,
-        index:true,
+        required:true,
         trim:true,
-        
     },
     avatar:{
         type:String,//cloudinary url
-        requried:true,
-        unique:true,
-        lowercase:true,
-        trim:true,
-        index:true,
+        required:true,
     },
     coverImage:{
         type:String,
@@ -53,42 +46,39 @@ const userSchema = new Schema({
 },{
     timestamps:true
 });
-userSchema.pre("save",function(next){
+userSchema.pre("save",async function(){
     if(!this.isModified("password"))
-        return next()
+        return 
 
     
-    this.password=bcrypt.hash(this.password,10)
-    next()
+    this.password= await bcrypt.hash(this.password,10)
+    
 
 })
 userSchema.methods.isPasswordCorrect=async function(password){
     return await bcrypt.compare(password,this.password)
 }
 userSchema.methods.generateAccessToken=function(){
-    return Jwt.sign({
+    return jwt.sign({
         _id:this._id,
         email:this.email,
         fullname:this.fullname,
         userName:this.userName,
 
     },
-    process.env.ACCESS_TOKEN_SECERET,
+    process.env.ACCESS_TOKEN_SECRET,
     {
-        expiresIn:process.env.REFRESH_TOKEN_EXPIRY,
+        expiresIn:process.env.ACCESS_TOKEN_EXPIRY,
 
     }
 )
 }
 userSchema.methods.generateRefreshToken=function(){
-     return Jwt.sign({
+     return jwt.sign({
         _id:this._id,
-        email:this.email,
-        fullname:this.fullname,
-        userName:this.userName,
 
     },
-    process.env.ACCESS_TOKEN_SECERET,
+    process.env.REFRESH_TOKEN_SECRET,
     {
         expiresIn:process.env.REFRESH_TOKEN_EXPIRY,
 
